@@ -5,4 +5,4 @@ A single-file, print-optimized worksheet for Britton Laundry.
 - Remembers last ticket # in localStorage (shared for all browsers on this domain)
 - Prints in landscape with clean black-and-white styling
 
-**Live page:** (add your GitHub Pages URL here)
+**Live page:** (https://skinny-pinks.github.io/britton-laundry-shift-cash./)
