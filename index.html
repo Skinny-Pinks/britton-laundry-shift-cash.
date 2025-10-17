@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Britton Laundry — Shift Cash Reconciliation (Working v2)</title>
+<style>
+  @page { size: Letter landscape; margin: 0.5in; }
+  :root { --ink:#000; --paper:#fff; --line:1.25; }
+  html, body { margin:0; background:var(--paper); color:var(--ink); font:14px/var(--line) -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  h1 { text-align:center; font-weight:900; font-size:22px; margin:8px 0 6px; letter-spacing:.02em; }
+  .sheet { display:grid; grid-template-columns: 1fr 1fr; gap:12px; padding:0.4in; }
+  .col { border:2px solid #000; padding:18px; display:flex; flex-direction:column; gap:8px; }
+  h2 { font-size:15px; font-weight:800; border-bottom:1px solid #000; margin:4px 0 6px; }
+  .row { display:flex; gap:10px; align-items:center; }
+  .row label { min-width:180px; font-weight:700; }
+  .row input[type="text"], .row input[type="number"], .row input[type="date"], .row select { flex:1; border:1px solid #000; padding:4px 6px; height:28px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { border:1px solid #000; padding:4px 6px; font-size:13px; }
+  th { background:#f6f6f6; text-align:left; }
+  tfoot th, tfoot td { font-weight:800; }
+  .small { font-size:12px; }
+  .note { border-top:1px dashed #000; padding-top:6px; margin-top:6px; font-size:12px; }
+  .two { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .sig { display:grid; grid-template-columns: 220px 1fr; gap:8px; align-items:center; }
+  .sig input { border:1px solid #000; padding:4px 6px; height:28px; }
+  .mono { font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace; }
+  .muted { color:#000; opacity:.8; }
+  .right { text-align:right; }
+  .center { text-align:center; }
+  .w100 { width:100%; }
+  .nowrap { white-space:nowrap; }
+  .footbox { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+  @media print {
+    .sheet { padding:0.3in; gap:10px; }
+    .col { padding:14px; }
+  }
+</style>
+</head>
+<body>
+<h1>BRITTON LAUNDRY — SHIFT CASH RECONCILIATION (Working v2)</h1>
+<div class="sheet">
+
+  <!-- LEFT COLUMN (Previous / Shift A) -->
+  <section class="col" id="colL">
+    <h2>Header / Identifiers (Left)</h2>
+    <div class="row"><label for="dateL">Date</label><input id="dateL" type="date" placeholder="YYYY‑MM‑DD"></div>
+    <div class="row"><label for="empL">Employee</label><input id="empL" type="text" placeholder="Name"></div>
+    <div class="row"><label for="shiftL">Shift</label>
+      <select id="shiftL" aria-label="Shift">
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
+    <div class="row"><label for="incomingL">Incoming (from prior)</label><input id="incomingL" type="number" step="0.01" value="40"></div>
+    <div class="row"><label for="beginL">Beginning Cash (counted)</label><input id="beginL" type="number" step="0.01" value="40"></div>
+
+    <h2>Sales & Itemized Tallies</h2>
+    <table id="salesL">
+      <thead>
+        <tr><th>Category</th><th class="right">Qty</th><th class="right">Unit $</th><th class="right">Manual Total $ (optional)</th><th class="right">Line Total $</th></tr>
+      </thead>
+      <tbody>
+        <tr data-item="dryers"><td>Dryers</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value=""></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="tide"><td>Tide — Original (1 load)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="1.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="clorox2"><td>Clorox 2 (box)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="1.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="bleach"><td>Liquid Bleach (½ cup)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="0.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="downy"><td>Ultra Downy (1 load)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="1.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="bounce"><td>Bounce (2 sheets)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="1.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="hangers"><td>Hangers (Singles)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" placeholder="enter unit"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="largebag"><td>Large Bags ($0.50)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="0.50"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="smallbag"><td>Small Bags ($0.25)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="0.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><th colspan="4" class="right">Total Income (Sales)</th><td class="right mono" id="salesTotalL">0.00</td></tr>
+      </tfoot>
+    </table>
+
+    <h2>Bundles — “Let Me Wash It” (No-Fold reference: 10lb $12.50 … 100lb $125)</h2>
+    <table id="bundlesL">
+      <thead>
+        <tr><th>Ticket #</th><th>Customer</th><th class="right">Income $</th><th class="right">Expense $</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+      </tbody>
+      <tfoot>
+        <tr><th colspan="3" class="right">Total Incoming (Bundles)</th><td class="right mono" id="bundleIncomeL">0.00</td></tr>
+        <tr><th colspan="3" class="right">Total Expenses (Bundles)</th><td class="right mono" id="bundleExpenseL">0.00</td></tr>
+      </tfoot>
+    </table>
+
+    <div class="small muted">Preset folded loads (reference): Small $25 · Medium $50 · Large $87.50 · X‑Large $125</div>
+
+    <h2>Pressing</h2>
+    <table id="pressL">
+      <thead>
+        <tr><th>Ticket #</th><th>Customer</th><th class="right">Income $</th><th class="right">Hangers</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+      </tbody>
+      <tfoot>
+        <tr><th colspan="3" class="right">Total Incoming (Pressing)</th><td class="right mono" id="pressIncomeL">0.00</td></tr>
+        <tr><th colspan="3" class="right">Total Hangers</th><td class="right mono" id="pressHangersL">0</td></tr>
+      </tfoot>
+    </table>
+
+    <h2>Cash Paid Out</h2>
+    <table id="payoutL">
+      <thead><tr><th>Name</th><th>Reason</th><th class="right">Amount $</th></tr></thead>
+      <tbody>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+      </tbody>
+      <tfoot><tr><th colspan="2" class="right">Total Cash Paid Out</th><td class="right mono" id="paidOutL">0.00</td></tr></tfoot>
+    </table>
+
+    <h2>Final Summary & Reconciliation</h2>
+    <div class="row"><label>Income from Sales</label><input id="sumSalesL" type="number" step="0.01" readonly></div>
+    <div class="row"><label>+ Income from Bundles</label><input id="sumBundlesL" type="number" step="0.01" readonly></div>
+    <div class="row"><label>+ Income from Pressing</label><input id="sumPressL" type="number" step="0.01" readonly></div>
+    <div class="row"><label>– Bundle Expense / Cash Paid Out</label><input id="sumExpenseL" type="number" step="0.01" readonly></div>
+    <div class="row"><label>= Total Profit</label><input id="totalProfitL" type="number" step="0.01" readonly></div>
+    <div class="row"><label>+ Beginning Cash</label><input id="beginEchoL" type="number" step="0.01" readonly></div>
+    <div class="row"><label>= Expected Drawer Total</label><input id="expectedDrawerL" type="number" step="0.01" readonly></div>
+    <div class="row"><label>Deposit / Drop (recommended)</label><input id="dropRecoL" type="number" step="0.01" readonly></div>
+    <div class="row"><label>Counted Drawer (actual)</label><input id="countedDrawerL" type="number" step="0.01" value=""></div>
+    <div class="row"><label>Over / Short</label><input id="overShortL" type="number" step="0.01" readonly></div>
+    <div class="note small">Float baseline (can edit): <input id="floatBaseL" type="number" step="0.01" value="40" style="width:80px"> — Recommended Drop = Expected − Float</div>
+    <div class="two">
+      <div class="sig"><span>Outgoing Signature</span><input type="text"></div>
+      <div class="sig"><span>Incoming Signature</span><input type="text"></div>
+    </div>
+  </section>
+
+  <!-- RIGHT COLUMN (Incoming / Shift B) -->
+  <section class="col" id="colR">
+    <h2>Header / Identifiers (Right)</h2>
+    <div class="row"><label for="dateR">Date</label><input id="dateR" type="date" placeholder="YYYY‑MM‑DD"></div>
+    <div class="row"><label for="empR">Employee</label><input id="empR" type="text" placeholder="Name"></div>
+    <div class="row"><label for="shiftR">Shift</label>
+      <select id="shiftR" aria-label="Shift">
+        <option value="AM">AM</option>
+        <option value="PM">PM</option>
+      </select>
+    </div>
+    <div class="row"><label for="incomingR">Incoming (from prior)</label><input id="incomingR" type="number" step="0.01" value="40"></div>
+    <div class="row"><label for="beginR">Beginning Cash (counted)</label><input id="beginR" type="number" step="0.01" value="40"></div>
+
+    <h2>Sales & Itemized Tallies</h2>
+    <table id="salesR">
+      <thead>
+        <tr><th>Category</th><th class="right">Qty</th><th class="right">Unit $</th><th class="right">Manual Total $ (optional)</th><th class="right">Line Total $</th></tr>
+      </thead>
+      <tbody>
+        <tr data-item="dryers"><td>Dryers</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value=""></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="tide"><td>Tide — Original (1 load)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="1.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="clorox2"><td>Clorox 2 (box)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="1.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="bleach"><td>Liquid Bleach (½ cup)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="0.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="downy"><td>Ultra Downy (1 load)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="1.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="bounce"><td>Bounce (2 sheets)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="1.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="hangers"><td>Hangers (Singles)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" placeholder="enter unit"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="largebag"><td>Large Bags ($0.50)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="0.50"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+        <tr data-item="smallbag"><td>Small Bags ($0.25)</td><td><input type="number" step="1" value="0"></td><td><input type="number" step="0.01" value="0.25"></td><td><input type="number" step="0.01" value=""></td><td class="right mono">0.00</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><th colspan="4" class="right">Total Income (Sales)</th><td class="right mono" id="salesTotalR">0.00</td></tr>
+      </tfoot>
+    </table>
+
+    <h2>Bundles — “Let Me Wash It” (No-Fold reference: 10lb $12.50 … 100lb $125)</h2>
+    <table id="bundlesR">
+      <thead>
+        <tr><th>Ticket #</th><th>Customer</th><th class="right">Income $</th><th class="right">Expense $</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100 ticket"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+      </tbody>
+      <tfoot>
+        <tr><th colspan="3" class="right">Total Incoming (Bundles)</th><td class="right mono" id="bundleIncomeR">0.00</td></tr>
+        <tr><th colspan="3" class="right">Total Expenses (Bundles)</th><td class="right mono" id="bundleExpenseR">0.00</td></tr>
+      </tfoot>
+    </table>
+
+    <div class="small muted">Preset folded loads (reference): Small $25 · Medium $50 · Large $87.50 · X‑Large $125</div>
+
+    <h2>Pressing</h2>
+    <table id="pressR">
+      <thead>
+        <tr><th>Ticket #</th><th>Customer</th><th class="right">Income $</th><th class="right">Hangers</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td><td class="right"><input type="number" step="1" value=""></td></tr>
+      </tbody>
+      <tfoot>
+        <tr><th colspan="3" class="right">Total Incoming (Pressing)</th><td class="right mono" id="pressIncomeR">0.00</td></tr>
+        <tr><th colspan="3" class="right">Total Hangers</th><td class="right mono" id="pressHangersR">0</td></tr>
+      </tfoot>
+    </table>
+
+    <h2>Cash Paid Out</h2>
+    <table id="payoutR">
+      <thead><tr><th>Name</th><th>Reason</th><th class="right">Amount $</th></tr></thead>
+      <tbody>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+        <tr><td><input type="text" class="w100"></td><td><input type="text" class="w100"></td><td class="right"><input type="number" step="0.01" value=""></td></tr>
+      </tbody>
+      <tfoot><tr><th colspan="2" class="right">Total Cash Paid Out</th><td class="right mono" id="paidOutR">0.00</td></tr></tfoot>
+    </table>
+
+    <h2>Final Summary & Reconciliation</h2>
+    <div class="row"><label>Income from Sales</label><input id="sumSalesR" type="number" step="0.01" readonly></div>
+    <div class="row"><label>+ Income from Bundles</label><input id="sumBundlesR" type="number" step="0.01" readonly></div>
+    <div class="row"><label>+ Income from Pressing</label><input id="sumPressR" type="number" step="0.01" readonly></div>
+    <div class="row"><label>– Bundle Expense / Cash Paid Out</label><input id="sumExpenseR" type="number" step="0.01" readonly></div>
+    <div class="row"><label>= Total Profit</label><input id="totalProfitR" type="number" step="0.01" readonly></div>
+    <div class="row"><label>+ Beginning Cash</label><input id="beginEchoR" type="number" step="0.01" readonly></div>
+    <div class="row"><label>= Expected Drawer Total</label><input id="expectedDrawerR" type="number" step="0.01" readonly></div>
+    <div class="row"><label>Deposit / Drop (recommended)</label><input id="dropRecoR" type="number" step="0.01" readonly></div>
+    <div class="row"><label>Counted Drawer (actual)</label><input id="countedDrawerR" type="number" step="0.01" value=""></div>
+    <div class="row"><label>Over / Short</label><input id="overShortR" type="number" step="0.01" readonly></div>
+    <div class="note small">Float baseline (can edit): <input id="floatBaseR" type="number" step="0.01" value="40" style="width:80px"> — Recommended Drop = Expected − Float</div>
+    <div class="two">
+      <div class="sig"><span>Outgoing Signature</span><input type="text"></div>
+      <div class="sig"><span>Incoming Signature</span><input type="text"></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+function money(n){ return (isFinite(n) ? n : 0).toFixed(2); }
+function num(v){ var x = parseFloat(v); return isFinite(x) ? x : 0; }
+
+function calcSales(tableId, totalId){
+  const table = document.getElementById(tableId);
+  let sum = 0;
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    const qty = num(tr.children[1].querySelector('input').value);
+    const unit = num(tr.children[2].querySelector('input').value);
+    const manual = num(tr.children[3].querySelector('input').value);
+    const auto = qty * unit;
+    const line = manual > 0 ? manual : auto;
+    tr.children[4].textContent = money(line);
+    sum += line;
+  });
+  document.getElementById(totalId).textContent = money(sum);
+  return sum;
+}
+
+function sumColumn(tblId, colIdx){
+  const tbl = document.getElementById(tblId);
+  let s = 0;
+  tbl.querySelectorAll('tbody tr').forEach(tr => {
+    const inp = tr.children[colIdx].querySelector('input');
+    s += num(inp.value);
+  });
+  return s;
+}
+function sumIntColumn(tblId, colIdx){
+  const tbl = document.getElementById(tblId);
+  let s = 0;
+  tbl.querySelectorAll('tbody tr').forEach(tr => {
+    const inp = tr.children[colIdx].querySelector('input');
+    s += Math.floor(num(inp.value));
+  });
+  return s;
+}
+
+function recalc(side){
+  const sales = calcSales('sales'+side, 'salesTotal'+side);
+  const bInc = sumColumn('bundles'+side, 2);
+  const bExp = sumColumn('bundles'+side, 3);
+  const pInc = sumColumn('press'+side, 2);
+  const pHang = sumIntColumn('press'+side, 3);
+  const payOut = sumColumn('payout'+side, 2);
+
+  document.getElementById('bundleIncome'+side).textContent = money(bInc);
+  document.getElementById('bundleExpense'+side).textContent = money(bExp);
+  document.getElementById('pressIncome'+side).textContent = money(pInc);
+  document.getElementById('pressHangers'+side).textContent = pHang;
+
+  // Summary math
+  const sumSales = sales;
+  const sumBundles = bInc;
+  const sumPress = pInc;
+  const sumExpense = bExp + payOut;
+  const profit = sumSales + sumBundles + sumPress - sumExpense;
+  const begin = num(document.getElementById('begin'+side).value);
+  const floatBase = num(document.getElementById('floatBase'+side).value);
+  const expected = profit + begin;
+  const dropReco = Math.max(0, expected - floatBase);
+  const counted = num(document.getElementById('countedDrawer'+side).value);
+  const overShort = counted - (expected - dropReco); // compared after recommended drop
+
+  document.getElementById('sumSales'+side).value = money(sumSales);
+  document.getElementById('sumBundles'+side).value = money(sumBundles);
+  document.getElementById('sumPress'+side).value = money(sumPress);
+  document.getElementById('sumExpense'+side).value = money(sumExpense);
+  document.getElementById('totalProfit'+side).value = money(profit);
+  document.getElementById('beginEcho'+side).value = money(begin);
+  document.getElementById('expectedDrawer'+side).value = money(expected);
+  document.getElementById('dropReco'+side).value = money(dropReco);
+  document.getElementById('overShort'+side).value = money(overShort);
+}
+
+function wire(side){
+  document.querySelectorAll('#col'+side+' input, #col'+side+' select').forEach(inp => {
+    inp.addEventListener('input', () => recalc(side));
+    inp.addEventListener('change', () => recalc(side));
+    // Enter key navigation
+    inp.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        focusNextInput(inp);
+      }
+    });
+  });
+  recalc(side);
+}
+
+function focusNextInput(current){
+  const all = Array.from(document.querySelectorAll('input, select')).filter(el => !el.readOnly && !el.disabled);
+  const idx = all.indexOf(current);
+  const next = all[idx + 1] || all[0];
+  next.focus();
+  if(next.select) { try{ next.select(); }catch(e){} }
+}
+
+// ---- Date defaults to today (if empty) ----
+function setDefaultDates(){
+  const today = new Date();
+  const iso = today.toISOString().slice(0,10);
+  const dl = document.getElementById('dateL');
+  const dr = document.getElementById('dateR');
+  if(dl && !dl.value) dl.value = iso;
+  if(dr && !dr.value) dr.value = iso;
+}
+
+// ---- Shared Ticket Auto-Increment across both columns ----
+const TICKET_KEY = 'britton_lastTicket';
+function getLastTicket(){
+  const t = parseInt(localStorage.getItem(TICKET_KEY), 10);
+  return isFinite(t) ? t : 0;
+}
+function setLastTicket(n){
+  const t = parseInt(n,10);
+  if(isFinite(t)) localStorage.setItem(TICKET_KEY, String(t));
+}
+function fillTickets(){
+  let last = getLastTicket();
+  // get both tables' ticket inputs in visual order (left then right)
+  const tickets = document.querySelectorAll('#bundlesL .ticket, #bundlesR .ticket');
+  tickets.forEach(inp => {
+    if(!inp.value){
+      last += 1;
+      inp.value = String(last);
+    }else{
+      const val = parseInt(inp.value,10);
+      if(isFinite(val) && val > last) last = val;
+    }
+    inp.addEventListener('input', () => {
+      const val = parseInt(inp.value,10);
+      if(isFinite(val)){
+        const cur = getLastTicket();
+        if(val > cur) setLastTicket(val);
+      }
+    });
+  });
+  setLastTicket(last);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  setDefaultDates();
+  fillTickets();
+  wire('L'); wire('R');
+});
+</script>
+</body>
+</html>
